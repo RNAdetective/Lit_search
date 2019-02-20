@@ -17,6 +17,14 @@ ___
    * The first column is for the topics you would like to search for currenly it is single term only
    
    * The second column is for what you would like to name that topic for the file system
+   
+   ***If you have more then one search term for your topic you can run RISmed manually with the following command where topic_name is the name of topic for the folder system and topic1-10 are the search terms to combine for your topic.  For example topic_name = ZIKV and topic1 = ZIKV topic2 = AND topic3 = zika topic4 = zikv topic5 = OR topic6 = ZIKV and so on. Then you can run the litsearch.sh file after for the rest of the single term topics
+   
+   ```
+   Rscript ~/lit_search/scripts/pubmedman.R ~/lit_search/topic_name/topic_nameabstract.csv ~/lit_search/topic_name/topic_namestats.csv 100000 topic1 topic2 topic3 topic4 topic5 topic6 topic7 topic8 topic9 topic10
+   
+   ```
+   
 
 4.) Fill out the search_terms.csv in the lit_search/scripts/ directory
 
