@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 create_dir() {
-  dp="$main_dir"/"$topic"; #set up directories
-  wkd="$dir_path"/final;
-  mwkd="$main_dir"/final;
-  wkd1="$dir_path"/stats;
-  mwkd1="$main_dir"/topic_stats;
-for i in "$dp" "$wkd" "$mwkd" "$wkd1" "$mwkd1" ;
+dp="$main_dir"/"$topic"; #set up directories
+wkd="$dir_path"/final;
+mwkd="$main_dir"/final;
+wkd1="$dir_path"/stats;
+mwkd1="$main_dir"/topic_stats;
+catdir="$main_dir"/categories;
+for i in "$dp" "$wkd" "$mwkd" "$wkd1" "$mwkd1" "$catdir" ;
 do
   if [ ! -d "$i" ];
   then
@@ -59,7 +60,7 @@ Year() {
 awk -F',' '{ if ( $2 != "NA" ) { print } }' "$file_out" >> "$file_out4" #filters any article that does not have a date record in the metadata
 }
 chart() {
-Rscript --vanilla "$main_dir"/scripts/charts.R $Rtools $file_in $file_out $name #creates a piechart from a file with frequency in column 1 and names in column2
+Rscript --vanilla "$main_dir"/scripts/charts.R $file_in $file_out $name #creates a piechart from a file with frequency in column 1 and names in column2
 }
 barchart() {
 Rscript --vanilla "$main_dir"/scripts/barchart.R $file_in $file_out #creates bar charts
@@ -73,13 +74,18 @@ echo ""$column1","$column2"" >> "$file_out"
 find_totals2() {
 echo ""$column1","$column2"" >> "$file_out"
 }
+find_totals3() {
+    if [[ ! -s "$file_out" && "$header" == "no" ]]; then
+    add_header
+    fi
+    echo ""$column1","$column2","$column3"" >> "$file_out" 
+}
 add_header() {
 echo "name,freq" >> "$file_out"
 }
 run_tools() {
 if [ ! -s "$file_out" ]; then
   if [ -s "$file_in" ]; then
-    echo "Running "$tool""
     "$tool"
   else 
     echo ""$file_in" MISSING"
@@ -91,9 +97,6 @@ fi
 search_term_matrix() {
 cat "$wkd"/* | sed '1d' | sort -u | sed '1i name,freq' >> "$file_out"
 }
-search_term_matrix_main() {
-cat "$mwkd"/* | sort -u | sed '1i PMID' >> "$file_out"
-}
 rmlast() {
 cat "$file_in" | head -n -1 > temp.csv ; mv temp.csv "$file_in"
 }
@@ -103,14 +106,14 @@ cat "$file_out" | cut -d',' -f2 >> "$file_out2"
 rm "$file_out"
 }
 create_absearch() {
+wkd="$dir_path"/final/"$search_cat";
+dtm="$wkd"
+createdir
+for i in final totals charts ; do
   wkd="$dir_path"/final/"$search_cat";
-  dtm="$wkd"
+  dtm="$wkd"/"$i"
   createdir
-  for i in final totals charts ; do
-    wkd="$dir_path"/final/"$search_cat";
-    dtm="$wkd"/"$i"
-    createdir
-  done
+done
 }
 fix_header() {
 cat "$file_in" | awk -F',' '{ if ( $1 != "name" ) { print $1,$2; } }' | sed '1i name,freq' >> temp.csv
@@ -125,132 +128,140 @@ then
 fi
 }
 makedir() {
-        for i in final totals charts ;
-        do
-        if [ ! -d "$wkd"/"$i" ];
-        then
-          mkdir "$wkd"/"$i"
-        fi
-        done
+for i in final totals charts ;
+do
+  if [ ! -d "$wkd"/"$i" ];
+  then
+    mkdir "$wkd"/"$i"
+  fi
+done
 }
 set_cat_var() {
-
-      cat "$config" | sed '/^'$phrase'/ d' >> temp.txt
-      rm "$config" 
-      mv temp.txt "$config"
-      echo ""$phrase2"" >> /home/user/lit_search/scripts/config.cfg.defaults
+cat "$config" | sed '/^'$phrase'/ d' >> temp.txt
+rm "$config" 
+mv temp.txt "$config"
+echo ""$phrase2"" >> /home/user/lit_search/scripts/config.cfg.defaults
 } 
 
 run_ind_st() {
-            wkd="$dir_path"/final/"$search_cat";
-            topic="$(config_get topic)";
-            main_dir="$(config_get main_dir)";
-            dir_path="$main_dir"/"$topic";
-            file_in="$dir_path"/"$topic"abstracts.csv;
-            file_out="$dir_path"/"$search".csv;
-            file_out2="$wkd"/final/"$search"ID.csv;
-            tool=filter_abs;
-            run_tools #takes search term and finds PMID for abstracts containing that word
-            file_in="$wkd"/final/"$search"ID.csv;
-            file_out="$wkd"/totals/"$search"totals.csv;
-            if [ -s "$file_in" ]; then
-              totals=$(cat "$file_in" | wc -l); #count how many articles for search term
-              column1="$search"; # labels file with search term,
-              column2="$totals"; # writes the count for the search term
-              header=no
-              find_totals
-              file_in2="$dir_path"/"$topic"abPMID.csv;
-              g_tot=$(cat "$file_in2" | wc -l);
-              totals2=$(expr "$g_tot" - "$totals");
-              column1=$(echo ""$search"other"); # labels with others
-              column2="$totals2" # total number of articles with abstracts 
-              find_totals2 # adds totals to file
-              file_in="$wkd"/totals/"$search"totals.csv;
-              file_out="$wkd"/charts/"$search"totals.tiff;
-              Rtools=piechart
-              tool=chart;
-              name=totals;
-              run_tools # will create pie charts for search term against not search term
-            fi
+wkd="$dir_path"/final/"$search_cat";
+topic="$(config_get topic)";
+main_dir="$(config_get main_dir)";
+dir_path="$main_dir"/"$topic";
+file_in="$dir_path"/"$topic"abstracts.csv;
+file_out="$dir_path"/"$search".csv;
+file_out2="$wkd"/final/"$search"ID.csv;
+tool=filter_abs;
+run_tools #takes search term and finds PMID for abstracts containing that word
+file_in="$wkd"/final/"$search"ID.csv;
+file_out="$wkd"/totals/"$search"totals.csv;
+  if [ -s "$file_in" ]; 
+  then
+    totals=$(cat "$file_in" | wc -l); #count how many articles for search term
+    column1="$search"; # labels file with search term,
+    column2="$totals"; # writes the count for the search term
+    header=no
+    find_totals
+    file_in2="$dir_path"/"$topic"abPMID.csv;
+    g_tot=$(cat "$file_in2" | wc -l);
+    totals2=$(expr "$g_tot" - "$totals");
+    column1=$(echo ""$search"other"); # labels with others
+    column2="$totals2" # total number of articles with abstracts 
+    find_totals2 # adds totals to file
+    file_in="$wkd"/totals/"$search"totals.csv;
+    file_out="$wkd"/charts/"$search"totals.tiff;
+    tool=chart;
+    name=totals;
+    run_tools # will create pie charts for search term against not search term
+  fi
 } 
 total_cat_terms() {
-      wkd="$dir_path"/final/"$search_cat"/totals; #collection of PMID files for each search term
-      mwkd="$dir_path"/final;
-      file_out="$mwkd"/"$topic"total"$search_cat".csv; 
-      search_term_matrix #totals of articles for each search term
-      sed -i '/other/d' "$file_out"
+wkd="$dir_path"/final/"$search_cat"/totals; #collection of PMID files for each search term
+mwkd="$dir_path"/final;
+file_out="$mwkd"/"$topic"total"$search_cat".csv; 
+search_term_matrix #totals of articles for each search term
+sed -i '/other/d' "$file_out"
 } 
 searchterm_bargraph() {
-      dir_path="$main_dir"/"$topic"
-      mwkd="$dir_path"/final;
-      mmwkd="$main_dir"/final;
-      file_in="$mwkd"/"$topic"total"$search_cat".csv; #freq,search_cat
-      fix_header
-      file_in="$mwkd"/"$topic"total"$search_cat".csv; #freq,search_cat
-      file_out="$mwkd"/"$topic"total"$search_cat".tiff;
-      Rtools=barchart
-      tool=barchart;
-      name=empty;
-      run_tools #creates number of articles for each search term grouped by category
-}  
+dir_path="$main_dir"/"$topic"
+mwkd="$dir_path"/final;
+mmwkd="$main_dir"/final;
+file_in="$mwkd"/"$topic"total"$search_cat".csv; #freq,search_cat
+fix_header
+file_in="$mwkd"/"$topic"total"$search_cat".csv; #freq,search_cat
+file_out="$mwkd"/"$topic"total"$search_cat".tiff;
+tool=barchart;
+run_tools #creates number of articles for each search term grouped by category
+} 
+topiccategory() {
+search_cat=$(awk -F, 'NR==1{print $'$number'}' "$search_file"); #grep header name from
+file_in="$dir_path"/final/"$topic"total"$search_cat".csv;
+file_in2="$dir_path"/"$topic"abPMID.csv;
+file_out="$main_dir"/categories/"$topic""$search_cat".csv;
+totals=$(cat "$file_in" | wc -l); #count how many articles for search term 
+totalarticles=$(cat "$file_in2" | wc -l)
+percent=$(expr "$totals" / "$totalarticles")
+column1="$topic";
+column2="$percent";
+header=yes
+find_totals
+} 
 catgor_piechart() {
-      wkd="$mwkd"/"$search_cat"/final
-      mwkd="$dir_path"/final;
-      file_out="$mwkd"/"$topic"total"$search_cat"counts.csv;
-      search_term_matrix #total number of articles for each category
-      file_in="$mwkd"/"$topic"total"$search_cat"counts.csv;
-      file_out="$mwkd"/"$topic"total"$search_cat"abs.csv;
-      totals=$(cat "$file_in" | wc -l); #count how many articles for search term
-      column1="$search_cat"; # labels file with search term,
-      column2="$totals"; # writes the count for the search term
-      header=no
-      find_totals
-      file_in2="$dir_path"/"$topic"abPMID.csv;
-      file_out="$mwkd"/"$topic"total"$search_cat"abs.csv;
-      file_in="$mwkd"/"$topic"total"$search_cat"counts.csv;
-      totals=$(cat "$file_in" | wc -l); #count how many articles for search term
-      g_tot=$(cat "$file_in2" | wc -l);
-      totals2=$(expr "$g_tot" - "$totals"); 
-      column1="other then "$search_cat""; # labels file with search term,
-      column2="$totals2"; # writes the count for the search term 
-      find_totals2
-      file_in="$mwkd"/"$topic"total"$search_cat"abs.csv; #freq,search_cat
-      file_out="$mwkd"/"$topic"total"$search_cat"abs.tiff;
-      Rtools=piechart
-      tool=chart;
-      name=empty;
-      run_tools #pie chart for all search terms at least once in a category against none found
+wkd="$mwkd"/"$search_cat"/final
+mwkd="$dir_path"/final;
+file_out="$mwkd"/"$topic"total"$search_cat"counts.csv;
+search_term_matrix #total number of articles for each category
+file_in="$mwkd"/"$topic"total"$search_cat"counts.csv;
+file_out="$mwkd"/"$topic"total"$search_cat"abs.csv;
+totals=$(cat "$file_in" | wc -l); #count how many articles for search term
+column1="$search_cat"; # labels file with search term,
+column2="$totals"; # writes the count for the search term
+header=no
+find_totals
+file_in2="$dir_path"/"$topic"abPMID.csv;
+file_out="$mwkd"/"$topic"total"$search_cat"abs.csv;
+file_in="$mwkd"/"$topic"total"$search_cat"counts.csv;
+totals=$(cat "$file_in" | wc -l); #count how many articles for search term
+g_tot=$(cat "$file_in2" | wc -l);
+totals2=$(expr "$g_tot" - "$totals"); 
+column1="other then "$search_cat""; # labels file with search term,
+column2="$totals2"; # writes the count for the search term 
+find_totals2
+file_in="$mwkd"/"$topic"total"$search_cat"abs.csv; #freq,search_cat
+file_out="$mwkd"/"$topic"total"$search_cat"abs.tiff;
+tool=chart;
+run_tools #pie chart for all search terms at least once in a category against none found
 } 
  
 topic_bar_prep() {
-      file_in="$mwkd"/"$topic"total"$search_cat"counts.csv;
-      file_out="$mwkd"/"$topic"totalcatwtot.csv;
-      totals=$(cat "$file_in" | wc -l); #count how many articles for search term
-      column1="$search_cat"
-      column2="$totals"
-      header=yes
-      find_totals #adds a row with search 
+file_in="$mwkd"/"$topic"total"$search_cat"counts.csv;
+file_out="$mwkd"/"$topic"totalcatwtot.csv;
+totals=$(cat "$file_in" | wc -l); #count how many articles for search term
+column1="$search_cat"
+column2="$totals"
+header=yes
+find_totals #adds a row with search 
 } 
 topic_bar() {
-      #file_in="$dir_path"/"$topic"abPMID.csv;
-      #file_out="$dir_path"/final/"$topic"totalcatwtot.csv;
-      #totals=$(cat "$file_in" | wc -l); #count how many articles for search term
-      #column1=Total
-      #column2="$totals"
-      #header=yes
-      #find_totals
-
-      file_in="$dir_path"/final/"$topic"totalcatwtot.csv;
-      sed -i '1i name,freq' "$file_in"
-      file_out="$dir_path"/final/"$topic"totalwtot.tiff
-      Rtools=barchart
-      tool=barchart;
-      name=total;
-      run_tools # bar chart for each topic with categories showing how many found.
+#file_in="$dir_path"/"$topic"abPMID.csv;
+#file_out="$dir_path"/final/"$topic"totalcatwtot.csv;
+#totals=$(cat "$file_in" | wc -l); #count how many articles for search term
+#column1=Total
+#column2="$totals"
+#header=yes
+#find_totals
+file_in="$dir_path"/final/"$topic"totalcatwtot.csv;
+sed -i '1i name,freq' "$file_in"
+file_out="$dir_path"/final/"$topic"totalwtot.tiff
+tool=barchart;
+run_tools # bar chart for each topic with categories showing how many found.
 }
-
-    
-################################################################################################################
+mes_out() {
+DATE_WITH_TIME=$(date +%Y-%m-%d_%H-%M-%S)
+echo "'$DATE_WITH_TIME' $echo1
+___________________________________________________________________________"
+}
+#############################################################################################################
 #SEARCH FOR KEY TERMS ***
 ################################################################################################################
 maintopic1="$2" # uses defined main topics 1-6
@@ -265,6 +276,8 @@ for topic in "$maintopic1" "$maintopic2" "$maintopic3" "$maintopic4" "$maintopic
   create_dir #creates directories for results
   config_text #creates config file to store variables
   config_defaults #creates more config files for variables
+  echo1=$(echo "starting pubmed search for "$topic"")
+  mes_out
   pubmed_search #finds all pubmed articles for topic
   file_in="$dir_path"/"$topic"stats.csv
   file_out="$dir_path"/"$topic"stat_names.csv
@@ -274,6 +287,8 @@ for topic in "$maintopic1" "$maintopic2" "$maintopic3" "$maintopic4" "$maintopic
   file_out="$dir_path"/"$topic"abPMID.csv
   tool=total_wabs #gets article abstract file ready for analysis
   run_tools
+  echo1=$(echo "pubmed search for "$topic" done")
+  mes_out
 ################################################################################################################
 #CREATE PIECHART FOR EACH INDEX MEASURE IN STATS FROM PUBMED SEARCH ***
 ################################################################################################################
@@ -320,7 +335,6 @@ for topic in "$maintopic1" "$maintopic2" "$maintopic3" "$maintopic4" "$maintopic
     fi 
     file_in="$wkd"/"$name"new.csv;
     file_out="$wkd"/"$name".tiff;
-    Rtools=piechart
     tool=chart;
     run_tools # will create pie charts for each file
     cd
@@ -352,7 +366,7 @@ for topic in "$maintopic1" "$maintopic2" "$maintopic3" "$maintopic4" "$maintopic
 #SEARCH THE ABSTRACTS FOR EACH **TERM** IN A CATAGORY AND MAKE GRAPHS ***
 ################################################################################################################
   search_file="$main_dir"/scripts/search_terms.csv
-  for number in {1..2} ;
+  for number in {1..8} ;
   do 
     search_cat=$(awk -F, 'NR==1{print $'$number'}' "$search_file"); #grep header name from search_terms file those are search term catagories
     if [ "$search_cat" != "" ]; then
@@ -388,6 +402,7 @@ for topic in "$maintopic1" "$maintopic2" "$maintopic3" "$maintopic4" "$maintopic
         IFS=$OLDIFS
         total_cat_terms #PIECHARTS FOR EACH **CATEGORY BROKEN DOWN BY TERMS SEARCH_TERMS.CSV ***
         searchterm_bargraph #CHARTS FOR EACH TOPIC BROKEN DOWN BY CATEGORIES *(wont print bar) creates number of articles for each search term grouped by category
+        topiccategory
         catgor_piechart #CHARTS COMPARING categories *** pie chart for all search terms at least once in a category against none found
         topic_bar_prep #CHARTS COMPARING categories * bar chart for each topic with categories showing how many found.
       fi
@@ -397,7 +412,7 @@ for topic in "$maintopic1" "$maintopic2" "$maintopic3" "$maintopic4" "$maintopic
         {
         [ ! -f $INPUT ] && { echo "$INPUT file not found"; exit 99; }
         read
-        while IFS=, read -r catgor1 catgor2
+        while IFS=, read -r catgor1 catgor2 catgor3 catgor4 catgor5 catgor6 catgor7 catgor8
         do
           source /home/user/lit_search/scripts/config.shlib; # load the config library functions
           cd /home/user/lit_search/scripts #cd directory to where config files are stored
@@ -410,19 +425,159 @@ for topic in "$maintopic1" "$maintopic2" "$maintopic3" "$maintopic4" "$maintopic
         IFS=$OLDIFS
         total_cat_terms # set up for charts later ***
         searchterm_bargraph #x=terms in category y=how many articles for each term *(wont print bar)
+        topiccategory
         catgor_piechart # pie chart for all search terms at least once in a category. *** 
         topic_bar_prep # prep file for each category total to but in bar graph for each topic.
-      fi        
+      fi  
+      if [ "$number" == "3" ];
+      then
+        INPUT="$search_file"
+        {
+        [ ! -f $INPUT ] && { echo "$INPUT file not found"; exit 99; }
+        read
+        while IFS=, read -r catgor1 catgor2 catgor3 catgor4 catgor5 catgor6 catgor7 catgor8
+        do
+          source /home/user/lit_search/scripts/config.shlib; # load the config library functions
+          cd /home/user/lit_search/scripts #cd directory to where config files are stored
+          catnum="$(config_get catnum)";
+          search_cat="$(config_get search_cat)";  
+          search="$catgor3";
+          run_ind_st
+        done
+        } < $INPUT
+        IFS=$OLDIFS
+        total_cat_terms # set up for charts later ***
+        searchterm_bargraph #x=terms in category y=how many articles for each term *(wont print bar)
+        topiccategory
+        catgor_piechart # pie chart for all search terms at least once in a category. *** 
+        topic_bar_prep # prep file for each category total to but in bar graph for each topic.
+      fi
+      if [ "$number" == "4" ];
+      then
+        INPUT="$search_file"
+        {
+        [ ! -f $INPUT ] && { echo "$INPUT file not found"; exit 99; }
+        read
+        while IFS=, read -r catgor1 catgor2 catgor3 catgor4 catgor5 catgor6 catgor7 catgor8
+        do
+          source /home/user/lit_search/scripts/config.shlib; # load the config library functions
+          cd /home/user/lit_search/scripts #cd directory to where config files are stored
+          catnum="$(config_get catnum)";
+          search_cat="$(config_get search_cat)";  
+          search="$catgor4";
+          run_ind_st
+        done
+        } < $INPUT
+        IFS=$OLDIFS
+        total_cat_terms # set up for charts later ***
+        searchterm_bargraph #x=terms in category y=how many articles for each term *(wont print bar)
+        topiccategory
+        catgor_piechart # pie chart for all search terms at least once in a category. *** 
+        topic_bar_prep # prep file for each category total to but in bar graph for each topic.
+      fi  
+      if [ "$number" == "5" ];
+      then
+        INPUT="$search_file"
+        {
+        [ ! -f $INPUT ] && { echo "$INPUT file not found"; exit 99; }
+        read
+        while IFS=, read -r catgor1 catgor2 catgor3 catgor4 catgor5 catgor6 catgor7 catgor8
+        do
+          source /home/user/lit_search/scripts/config.shlib; # load the config library functions
+          cd /home/user/lit_search/scripts #cd directory to where config files are stored
+          catnum="$(config_get catnum)";
+          search_cat="$(config_get search_cat)";  
+          search="$catgor5";
+          run_ind_st
+        done
+        } < $INPUT
+        IFS=$OLDIFS
+        total_cat_terms # set up for charts later ***
+        searchterm_bargraph #x=terms in category y=how many articles for each term *(wont print bar)
+        topiccategory
+        catgor_piechart # pie chart for all search terms at least once in a category. *** 
+        topic_bar_prep # prep file for each category total to but in bar graph for each topic.
+      fi
+      if [ "$number" == "6" ];
+      then
+        INPUT="$search_file"
+        {
+        [ ! -f $INPUT ] && { echo "$INPUT file not found"; exit 99; }
+        read
+        while IFS=, read -r catgor1 catgor2 catgor3 catgor4 catgor5 catgor6 catgor7 catgor8
+        do
+          source /home/user/lit_search/scripts/config.shlib; # load the config library functions
+          cd /home/user/lit_search/scripts #cd directory to where config files are stored
+          catnum="$(config_get catnum)";
+          search_cat="$(config_get search_cat)";  
+          search="$catgor6";
+          run_ind_st
+        done
+        } < $INPUT
+        IFS=$OLDIFS
+        total_cat_terms # set up for charts later ***
+        searchterm_bargraph #x=terms in category y=how many articles for each term *(wont print bar)
+        topiccategory
+        catgor_piechart # pie chart for all search terms at least once in a category. *** 
+        topic_bar_prep # prep file for each category total to but in bar graph for each topic.
+      fi    
+      if [ "$number" == "7" ];
+      then
+        INPUT="$search_file"
+        {
+        [ ! -f $INPUT ] && { echo "$INPUT file not found"; exit 99; }
+        read
+        while IFS=, read -r catgor1 catgor2 catgor3 catgor4 catgor5 catgor6 catgor7 catgor8
+        do
+          source /home/user/lit_search/scripts/config.shlib; # load the config library functions
+          cd /home/user/lit_search/scripts #cd directory to where config files are stored
+          catnum="$(config_get catnum)";
+          search_cat="$(config_get search_cat)";  
+          search="$catgor7";
+          run_ind_st
+        done
+        } < $INPUT
+        IFS=$OLDIFS
+        total_cat_terms # set up for charts later ***
+        searchterm_bargraph #x=terms in category y=how many articles for each term *(wont print bar)
+        catgor_piechart # pie chart for all search terms at least once in a category. *** 
+        topic_bar_prep # prep file for each category total to but in bar graph for each topic.
+      fi   
+      if [ "$number" == "8" ];
+      then
+        INPUT="$search_file"
+        {
+        [ ! -f $INPUT ] && { echo "$INPUT file not found"; exit 99; }
+        read
+        while IFS=, read -r catgor1 catgor2 catgor3 catgor4 catgor5 catgor6 catgor7 catgor8
+        do
+          source /home/user/lit_search/scripts/config.shlib; # load the config library functions
+          cd /home/user/lit_search/scripts #cd directory to where config files are stored
+          catnum="$(config_get catnum)";
+          search_cat="$(config_get search_cat)";  
+          search="$catgor8";
+          run_ind_st
+        done
+        } < $INPUT
+        IFS=$OLDIFS
+        total_cat_terms # set up for charts later ***
+        searchterm_bargraph #x=terms in category y=how many articles for each term *(wont print bar)
+        topiccategory
+        catgor_piechart # pie chart for all search terms at least once in a category. *** 
+        topic_bar_prep # prep file for each category total to but in bar graph for each topic.
+      fi 
     fi
   done
   topic_bar #x=categories in topic y=how many articles contain at least one search term from each cat.
+  echo1=$(echo "graphs made for "$topic" done starting next topic")
+  mes_out
 done
 ################################################################################################################
-#CHARTS COMPARING TOPICS * bar chart for total number of articles for each topic with or wout abstracts
+# bar chart for total number of articles for each topic with or wout abstracts ***
 ################################################################################################################
-mwkd="$main_dir"/topic_stats;
+wkd="$main_dir"/topic_stats;
 file_out="$main_dir"/totals_list.csv;
-search_term_matrix_main #makes a unique list of all main topics articles to find percentage of articles with each main topic
+search_term_matrix #makes a unique list of all main topics articles to find percentage of articles with each main topic
 file_in="$main_dir"/abstotal.csv;
 sed -i '1i name,freq' "$file_in"
 file_out="$main_dir"/abstotal.tiff;
@@ -433,3 +588,20 @@ sed -i '1i name,freq' "$file_in"
 file_out="$main_dir"/totals.tiff;
 tool=barchart;
 run_tools # will create bar chart for total number of articles for each topic with or wout abstracts
+################################################################################################################
+# bar chart for total number of articles for each topic with or wout abstracts ***
+################################################################################################################
+for number in {1..8} ;
+do 
+  search_cat=$(awk -F, 'NR==1{print $'$number'}' "$search_file"); #grep header name from
+  file_in="$main_dir"/categories/"$topic""$search_cat".csv;
+  file_out="$main_dir"/"$topic""$search_cat".tiff;
+  sed -i '1i name,freq' "$file_in"
+  tool=barchart;
+  run_tools # will create bar chart for total number of articles with abstracts for each topic
+done
+echo1=$(echo "done with the current topics")
+mes_out
+rm -r "$main_dir"/final
+
+

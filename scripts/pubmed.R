@@ -6,14 +6,13 @@ if (length(args)==0) {
 } else if (length(args)==1) {
   args[2] = "out.txt"
 }
-library("RISmed")
-search_topic <- print(paste0(args[1])) #enter search terms here
-abs <- print(paste0(args[2])) #enter directory and name for abstracts to be stored
-info <- print(paste0(args[3])) #enter directory and name for other pubmed information to be stored
-sum_file <- print(paste0(args[5])) #enter directory and name for summary file
-search_query <- EUtilsSummary(search_topic,retmax=print(paste0(args[4]))) #runs pubmed search
-summary <- summary(search_query) #shows summary of search
-write.table(summary, sum_file)
+suppressPackageStartupMessages(library("RISmed"))
+search_topic <- paste0(args[1]) #enter search terms here
+abs <- paste0(args[2]) #enter directory and name for abstracts to be stored
+info <- paste0(args[3]) #enter directory and name for other pubmed information to be stored
+sum_file <- paste0(args[5]) #enter directory and name for summary file
+search_query <- EUtilsSummary(search_topic,retmax=paste0(args[4])) #runs pubmed search
+write.table(search_topic, sum_file, row.names=FALSE)
 records <- EUtilsGet(search_query) #creates S4 object for search
 pubmed_data <- data.frame('PMID'=PMID(records),'Title'=ArticleTitle(records),'Abstract'=AbstractText(records)) #pulls out abstracts
 pubmed_data$Abstract <- as.character(pubmed_data$Abstract) 

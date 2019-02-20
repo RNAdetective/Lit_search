@@ -1,6 +1,6 @@
-neurological_terms,congenital_terms
-neurological,congenital
-brain,TORCH
-spine,fetus
-CNS,pregnancy
-astrocyte,development
+neurological_terms,congenital_terms,symptoms_terms,innate_terms,stem_terms,epidemiology,
+neurological,congenital,microcephaly,IFNA,mouse,mosquitoes,
+brain,TORCH,lissencephaly,interferon,NPC,arbovirus,
+spine,fetus,chorioretinitis,STAT,pleuropotent,transmission,
+CNS,pregnancy,ventriculomegaly,TLR3,culture,outbreak,
+astrocyte,development,pregnancy,RIG1,primates,CDC,
