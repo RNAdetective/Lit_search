@@ -97,6 +97,9 @@ fi
 search_term_matrix() {
 cat "$wkd"/* | sed '1d' | sort -u | sed '1i name,freq' >> "$file_out"
 }
+search_term_matrix2() {
+cat "$wkd"/* | sed '1d' | sort -iD | sort -u | sed '1i name,freq' >> "$file_out"
+}
 rmlast() {
 cat "$file_in" | head -n -1 > temp.csv ; mv temp.csv "$file_in"
 }
@@ -209,30 +212,29 @@ find_totals
 catgor_piechart() {
 wkd="$mwkd"/"$search_cat"/final
 mwkd="$dir_path"/final;
-file_out="$mwkd"/"$topic"total"$search_cat"counts.csv;
-search_term_matrix #total number of articles for each category
-file_in="$mwkd"/"$topic"total"$search_cat"counts.csv;
-file_out="$mwkd"/"$topic"total"$search_cat"abs.csv;
+file_out="$mwkd"/"$topic"total"$search_cat"counts"$num".csv;
+search_term_matrix"$num" #total number of articles for each category
+file_in="$mwkd"/"$topic"total"$search_cat"counts"$num".csv;
+file_out="$mwkd"/"$topic"total"$search_cat"abs"$num".csv;
 totals=$(cat "$file_in" | wc -l); #count how many articles for search term
 column1="$search_cat"; # labels file with search term,
 column2="$totals"; # writes the count for the search term
 header=no
 find_totals
 file_in2="$dir_path"/"$topic"abPMID.csv;
-file_out="$mwkd"/"$topic"total"$search_cat"abs.csv;
-file_in="$mwkd"/"$topic"total"$search_cat"counts.csv;
+file_out="$mwkd"/"$topic"total"$search_cat"abs"$num".csv;
+file_in="$mwkd"/"$topic"total"$search_cat"counts"$num".csv;
 totals=$(cat "$file_in" | wc -l); #count how many articles for search term
 g_tot=$(cat "$file_in2" | wc -l);
 totals2=$(expr "$g_tot" - "$totals"); 
 column1="other then "$search_cat""; # labels file with search term,
 column2="$totals2"; # writes the count for the search term 
 find_totals2
-file_in="$mwkd"/"$topic"total"$search_cat"abs.csv; #freq,search_cat
-file_out="$mwkd"/"$topic"total"$search_cat"abs.tiff;
+file_in="$mwkd"/"$topic"total"$search_cat"abs"$num".csv; #freq,search_cat
+file_out="$mwkd"/"$topic"total"$search_cat"abs"$num".tiff;
 tool=chart;
 run_tools #pie chart for all search terms at least once in a category against none found
 } 
- 
 topic_bar_prep() {
 file_in="$mwkd"/"$topic"total"$search_cat"counts.csv;
 file_out="$mwkd"/"$topic"totalcatwtot.csv;
@@ -403,7 +405,10 @@ for topic in "$maintopic1" "$maintopic2" "$maintopic3" "$maintopic4" "$maintopic
         total_cat_terms #PIECHARTS FOR EACH **CATEGORY BROKEN DOWN BY TERMS SEARCH_TERMS.CSV ***
         searchterm_bargraph #CHARTS FOR EACH TOPIC BROKEN DOWN BY CATEGORIES *(wont print bar) creates number of articles for each search term grouped by category
         topiccategory
-        catgor_piechart #CHARTS COMPARING categories *** pie chart for all search terms at least once in a category against none found
+        for num in {1..2} ;
+        do
+        catgor_piechart #CHARTS COMPARING categories *** pie chart for all search terms  at least once in a category against none found
+        done
         topic_bar_prep #CHARTS COMPARING categories * bar chart for each topic with categories showing how many found.
       fi
       if [ "$number" == "2" ];
@@ -426,7 +431,10 @@ for topic in "$maintopic1" "$maintopic2" "$maintopic3" "$maintopic4" "$maintopic
         total_cat_terms # set up for charts later ***
         searchterm_bargraph #x=terms in category y=how many articles for each term *(wont print bar)
         topiccategory
-        catgor_piechart # pie chart for all search terms at least once in a category. *** 
+        for num in {1..2} ;
+        do
+        catgor_piechart #CHARTS COMPARING categories *** pie chart for all search terms  at least once in a category against none found
+        done 
         topic_bar_prep # prep file for each category total to but in bar graph for each topic.
       fi  
       if [ "$number" == "3" ];
@@ -449,7 +457,10 @@ for topic in "$maintopic1" "$maintopic2" "$maintopic3" "$maintopic4" "$maintopic
         total_cat_terms # set up for charts later ***
         searchterm_bargraph #x=terms in category y=how many articles for each term *(wont print bar)
         topiccategory
-        catgor_piechart # pie chart for all search terms at least once in a category. *** 
+        for num in {1..2};
+        do
+        catgor_piechart #CHARTS COMPARING categories *** pie chart for all search terms  at least once in a category against none found
+        done
         topic_bar_prep # prep file for each category total to but in bar graph for each topic.
       fi
       if [ "$number" == "4" ];
@@ -472,7 +483,10 @@ for topic in "$maintopic1" "$maintopic2" "$maintopic3" "$maintopic4" "$maintopic
         total_cat_terms # set up for charts later ***
         searchterm_bargraph #x=terms in category y=how many articles for each term *(wont print bar)
         topiccategory
-        catgor_piechart # pie chart for all search terms at least once in a category. *** 
+        for num in {1..2} ;
+        do
+        catgor_piechart #CHARTS COMPARING categories *** pie chart for all search terms  at least once in a category against none found
+        done
         topic_bar_prep # prep file for each category total to but in bar graph for each topic.
       fi  
       if [ "$number" == "5" ];
@@ -495,7 +509,10 @@ for topic in "$maintopic1" "$maintopic2" "$maintopic3" "$maintopic4" "$maintopic
         total_cat_terms # set up for charts later ***
         searchterm_bargraph #x=terms in category y=how many articles for each term *(wont print bar)
         topiccategory
-        catgor_piechart # pie chart for all search terms at least once in a category. *** 
+        for num in {1..2} ;
+        do
+        catgor_piechart #CHARTS COMPARING categories *** pie chart for all search terms  at least once in a category against none found
+        done
         topic_bar_prep # prep file for each category total to but in bar graph for each topic.
       fi
       if [ "$number" == "6" ];
@@ -518,7 +535,10 @@ for topic in "$maintopic1" "$maintopic2" "$maintopic3" "$maintopic4" "$maintopic
         total_cat_terms # set up for charts later ***
         searchterm_bargraph #x=terms in category y=how many articles for each term *(wont print bar)
         topiccategory
-        catgor_piechart # pie chart for all search terms at least once in a category. *** 
+        for num in {1..2} ;
+        do
+        catgor_piechart #CHARTS COMPARING categories *** pie chart for all search terms  at least once in a category against none found
+        done
         topic_bar_prep # prep file for each category total to but in bar graph for each topic.
       fi    
       if [ "$number" == "7" ];
@@ -540,7 +560,10 @@ for topic in "$maintopic1" "$maintopic2" "$maintopic3" "$maintopic4" "$maintopic
         IFS=$OLDIFS
         total_cat_terms # set up for charts later ***
         searchterm_bargraph #x=terms in category y=how many articles for each term *(wont print bar)
-        catgor_piechart # pie chart for all search terms at least once in a category. *** 
+        for num in {1..2} ;
+        do
+        catgor_piechart #CHARTS COMPARING categories *** pie chart for all search terms  at least once in a category against none found
+        done
         topic_bar_prep # prep file for each category total to but in bar graph for each topic.
       fi   
       if [ "$number" == "8" ];
@@ -563,7 +586,10 @@ for topic in "$maintopic1" "$maintopic2" "$maintopic3" "$maintopic4" "$maintopic
         total_cat_terms # set up for charts later ***
         searchterm_bargraph #x=terms in category y=how many articles for each term *(wont print bar)
         topiccategory
-        catgor_piechart # pie chart for all search terms at least once in a category. *** 
+        for num in {1..2} ;
+        do
+        catgor_piechart #CHARTS COMPARING categories *** pie chart for all search terms  at least once in a category against none found
+        done
         topic_bar_prep # prep file for each category total to but in bar graph for each topic.
       fi 
     fi
