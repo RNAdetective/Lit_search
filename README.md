@@ -1,7 +1,7 @@
 # About Lit_search
  
-* Allows for searching pubmed with up to 6 main topics  
-* Then it allows for up to 4 search categories of search terms to search articles found on the main topic.
+* Allows for searching pubmed with unlimited main one word topics  
+* Then it allows for up to 8 search categories of unlimited number of search terms to search articles already collected on the main topic.
 * Creates pie charts for number of articles found containing search terms and for how many articles were found in each search category.
 * Creates bar graphs summarized how many articles for each search term in a category and each category in a topic and also for how many results were found for each topic in the run.
 
@@ -12,20 +12,26 @@ ___
 
 2.) Download the compressed file and uncompress in your working directory.
 
-3.) Fill out the search_terms.csv 
+3.) Fill ou the topics.csv file in the lit_search/scripts/ directory
+
+   * The first column is for the topics you would like to search for currenly it is single term only
+   
+   * The second column is for what you would like to name that topic for the file system
+
+4.) Fill out the search_terms.csv in the lit_search/scripts/ directory
 
    * The first row contains the first search term with terms after it this tells the tool what your categories are named
    
-   * The second row has to contain the first search term but this time without the terms at the end
+   * The second row and on is for single term list of what you would like to search for
    
-4.) enter the following command into your terminal 
+5.) enter the following command into your terminal 
 
    * Where topic is your search topic to collect articles from pubmed about.
    
    * Where ~ is the working directory where you uncompressed the lit_search file from github.
    
 ```
-bash ~/lit_search/scripts/litsearch.sh ~/lit_search topic1 topic2 topic3 topic4 topic5 topic6
+bash ~/lit_search/scripts/litsearch.sh ~/lit_search
 ```
 ___
 
