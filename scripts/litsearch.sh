@@ -239,8 +239,9 @@ topic_bar() {
       #column2="$totals"
       #header=yes
       #find_totals
-      sed -i '1i name,freq' "$file_out"
+
       file_in="$dir_path"/final/"$topic"totalcatwtot.csv;
+      sed -i '1i name,freq' "$file_in"
       file_out="$dir_path"/final/"$topic"totalwtot.tiff
       Rtools=barchart
       tool=barchart;
@@ -423,14 +424,12 @@ mwkd="$main_dir"/topic_stats;
 file_out="$main_dir"/totals_list.csv;
 search_term_matrix_main #makes a unique list of all main topics articles to find percentage of articles with each main topic
 file_in="$main_dir"/abstotal.csv;
+sed -i '1i name,freq' "$file_in"
 file_out="$main_dir"/abstotal.tiff;
-name=empty;
 tool=barchart;
-Rtools=barchart
 run_tools # will create bar chart for total number of articles with abstracts for each topic
 file_in="$main_dir"/totals.csv;
+sed -i '1i name,freq' "$file_in"
 file_out="$main_dir"/totals.tiff;
-name=empty;
 tool=barchart;
-Rtools=barchart
 run_tools # will create bar chart for total number of articles for each topic with or wout abstracts
