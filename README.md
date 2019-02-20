@@ -9,13 +9,21 @@ ___
 
 ## Getting Started
 1.) Make sure you have the R packages ggplot2 and RISmed installed in R
+
 2.) Download the compressed file and uncompress in your working directory.
+
 3.) Fill out the search_terms.csv 
-   1.) The first row contains the first search term with terms after it this tells the tool what your categories are named
-   2.) the second row has to contain the first search term but this time without the terms at the end
+
+   * The first row contains the first search term with terms after it this tells the tool what your categories are named
+   
+   * The second row has to contain the first search term but this time without the terms at the end
+   
 4.) enter the following command into your terminal 
-   1.) where topic is your search topic to collect articles from pubmed about.
-   2.) ~ is the working directory where you uncompressed the lit_search file from github.
+
+   * Where topic is your search topic to collect articles from pubmed about.
+   
+   * Where ~ is the working directory where you uncompressed the lit_search file from github.
+   
 ```
 bash ~/lit_search/scripts/litsearch.sh ~/lit_search topic1 topic2 topic3 topic4 topic5 topic6
 ```
