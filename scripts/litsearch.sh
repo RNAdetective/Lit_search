@@ -100,6 +100,12 @@ cat "$wkd"/* | sed '1d' | sort -iu | sed '1i name,freq' >> "$file_out"
 search_term_matrix2() {
 cat "$wkd"/* | sed '1d' | sort -id | sort -u | sed '1i name,freq' >> "$file_out"
 }
+search_term_matrix3() {
+cat "$wkd"/* | sed '1d' | sort -id |sort -iu | sort -u | sed '1i name,freq' >> "$file_out"
+}
+search_term_matrix4() {
+cat "$wkd"/* | sed '1d' | sort -id |sort -iu | sort -iu | sort -u | sed '1i name,freq' >> "$file_out"
+}
 rmlast() {
 cat "$file_in" | head -n -1 > temp.csv ; mv temp.csv "$file_in"
 }
@@ -199,31 +205,31 @@ find_totals
 } 
 catgor_piechart() {
 wkd="$dir_path"/final/"$search_cat"/final;
-file_out="$dir_path"/final/"$topic"total"$search_cat"counts"$num".csv;
+file_out="$dir_path"/final/"$search_cat"/"$topic"total"$search_cat"counts"$num".csv;
 search_term_matrix"$num" #total number of articles for each category
-file_in="$dir_path"/final/"$topic"total"$search_cat"counts"$num".csv;
-file_out="$dir_path"/final/"$topic"total"$search_cat"abs"$num".csv;
+file_in="$dir_path"/final/"$search_cat"/"$topic"total"$search_cat"counts"$num".csv;
+file_out="$dir_path"/final/"$search_cat"/"$topic"total"$search_cat"abs"$num".csv;
 totals=$(cat "$file_in" | wc -l); #count how many articles for search term
 column1="$search_cat"; # labels file with search term,
 column2="$totals"; # writes the count for the search term
 header=no
 find_totals
 file_in2="$dir_path"/"$topic"abPMID.csv;
-file_out="$dir_path"/final/"$topic"total"$search_cat"abs"$num".csv;
-file_in="$dir_path"/final/"$topic"total"$search_cat"counts"$num".csv;
+file_out="$dir_path"/final/"$search_cat"/"$topic"total"$search_cat"abs"$num".csv;
+file_in="$dir_path"/final/"$search_cat"/"$topic"total"$search_cat"counts"$num".csv;
 totals=$(cat "$file_in" | wc -l); #count how many articles for search term
 g_tot=$(cat "$file_in2" | wc -l);
 totals2=$(expr "$g_tot" - "$totals"); 
 column1="other then "$search_cat""; # labels file with search term,
 column2="$totals2"; # writes the count for the search term 
 find_totals2
-file_in="$dir_path"/final/"$topic"total"$search_cat"abs"$num".csv; #freq,search_cat
-file_out="$dir_path"/final/"$topic"total"$search_cat"abs"$num".tiff;
+file_in="$dir_path"/final/"$search_cat"/"$topic"total"$search_cat"abs"$num".csv; #freq,search_cat
+file_out="$dir_path"/final/"$search_cat"/"$topic"total"$search_cat"abs"$num".tiff;
 tool=chart;
 run_tools #pie chart for all search terms at least once in a category against none found
 } 
 topic_bar_prep() {
-file_in="$dir_path"/final/"$topic"total"$search_cat"counts"$num".csv;
+file_in="$dir_path"/final/"$search_cat"/"$topic"total"$search_cat"counts"$num".csv;
 file_out="$dir_path"/final/"$topic"totalcatwtot"$num".csv;
 totals=$(cat "$file_in" | wc -l); #count how many articles for search term
 column1="$search_cat"
@@ -277,7 +283,7 @@ for topic in "$maintopic1" "$maintopic2" "$maintopic3" "$maintopic4" "$maintopic
     file_out="$dir_path"/"$topic"abPMID.csv
     tool=total_wabs #gets article abstract file ready for analysis
     run_tools
-    echo1=$(echo "pubmed search for "$topic" done")
+    echo1=$(echo "pubmed search for "$topic" done starting summarizing results")
     mes_out
 ################################################################################################################
 #CREATE PIECHART FOR EACH INDEX MEASURE IN STATS FROM PUBMED SEARCH ***
@@ -391,7 +397,7 @@ for topic in "$maintopic1" "$maintopic2" "$maintopic3" "$maintopic4" "$maintopic
           total_cat_terms #PIECHARTS FOR EACH **CATEGORY BROKEN DOWN BY TERMS SEARCH_TERMS.CSV ***
           searchterm_bargraph #CHARTS FOR EACH TOPIC BROKEN DOWN BY CATEGORIES *(wont print bar) creates number of articles for each search term grouped by category
           topiccategory
-          for num in {1..2} ;
+          for num in 1 ;
           do
           catgor_piechart #pie chart for all search terms in a category against none found
           topic_bar_prep #bar graph for each topic.
@@ -417,7 +423,7 @@ for topic in "$maintopic1" "$maintopic2" "$maintopic3" "$maintopic4" "$maintopic
           total_cat_terms # set up for charts later ***
           searchterm_bargraph #x=terms in category y=how many articles for each term *(wont print bar)
           topiccategory
-          for num in {1..2} ;
+          for num in 1 ;
           do
           catgor_piechart #pie chart for all search terms in a category against none found
           topic_bar_prep #bar graph for each topic.
@@ -443,7 +449,7 @@ for topic in "$maintopic1" "$maintopic2" "$maintopic3" "$maintopic4" "$maintopic
           total_cat_terms # set up for charts later ***
           searchterm_bargraph #x=terms in category y=how many articles for each term *(wont print bar)
           topiccategory
-          for num in {1..2} ;
+          for num in 1 ;
           do
           catgor_piechart #pie chart for all search terms in a category against none found
           topic_bar_prep #bar graph for each topic.
@@ -469,7 +475,7 @@ for topic in "$maintopic1" "$maintopic2" "$maintopic3" "$maintopic4" "$maintopic
           total_cat_terms # set up for charts later ***
           searchterm_bargraph #x=terms in category y=how many articles for each term *(wont print bar)
           topiccategory
-          for num in {1..2} ;
+          for num in 1 ;
           do
             catgor_piechart #pie chart for all search terms in a category against none found
             topic_bar_prep #bar graph for each topic.
@@ -495,7 +501,7 @@ for topic in "$maintopic1" "$maintopic2" "$maintopic3" "$maintopic4" "$maintopic
           total_cat_terms # set up for charts later ***
           searchterm_bargraph #x=terms in category y=how many articles for each term *(wont print bar)
           topiccategory
-          for num in {1..2} ;
+          for num in 1 ;
           do
           catgor_piechart #pie chart for all search terms in a category against none found
           topic_bar_prep #bar graph for each topic.
@@ -521,7 +527,7 @@ for topic in "$maintopic1" "$maintopic2" "$maintopic3" "$maintopic4" "$maintopic
           total_cat_terms # set up for charts later ***
           searchterm_bargraph #x=terms in category y=how many articles for each term *(wont print bar)
           topiccategory
-          for num in {1..2} ;
+          for num in 1 ;
           do
           catgor_piechart #pie chart for all search terms in a category against none found
           topic_bar_prep #bar graph for each topic.
@@ -546,7 +552,7 @@ for topic in "$maintopic1" "$maintopic2" "$maintopic3" "$maintopic4" "$maintopic
           IFS=$OLDIFS
           total_cat_terms # set up for charts later ***
           searchterm_bargraph #x=terms in category y=how many articles for each term *(wont print bar)
-          for num in {1..2} ;
+          for num in 1 ;
           do
             catgor_piechart #pie chart for all search terms in a category against none found
             topic_bar_prep #bar graph for each topic.
@@ -572,7 +578,7 @@ for topic in "$maintopic1" "$maintopic2" "$maintopic3" "$maintopic4" "$maintopic
           total_cat_terms # set up for charts later ***
           searchterm_bargraph #x=terms in category y=how many articles for each term *(wont print bar)
           topiccategory
-          for num in {1..2} ;
+          for num in 1 ;
           do
             catgor_piechart #pie chart for all search terms in a category against none found
             topic_bar_prep #bar graph for each topic.
@@ -580,7 +586,7 @@ for topic in "$maintopic1" "$maintopic2" "$maintopic3" "$maintopic4" "$maintopic
         fi 
       fi
     done
-    for num in {1..2} ;
+    for num in 1 ;
     do
       topic_bar #x=categories in topic y=how many articles search term from each cat.
     done
@@ -590,10 +596,10 @@ for topic in "$maintopic1" "$maintopic2" "$maintopic3" "$maintopic4" "$maintopic
     for number in {1..8} ;
     do 
       search_cat=$(awk -F, 'NR==1{print $'$number'}' "$search_file"); #grep header name from
-      if [ "$search_cat" != "" };
+      if [ "$search_cat" != "" ];
       then
         file_in="$main_dir"/categories/"$topic""$search_cat".csv;
-        file_out="$main_dir"/"$topic""$search_cat".tiff;
+        file_out="$main_dir"/final/"$topic""$search_cat".tiff;
         sed -i '1i name,freq' "$file_in"
         tool=barchart;
         run_tools # will create bar chart for total number of articles with abstracts 
