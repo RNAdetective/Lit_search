@@ -21,4 +21,15 @@ bash ~/lit_search/scripts/litsearch.sh ~/lit_search topic1 topic2 topic3 topic4 
 ```
 ___
 
+## Built With
+R packages
+* [Bioconductor packages] (https://www.bioconductor.org/)
+* [RISmed] (https://bioconductor.org/packages/release/bioc/html/RISmed.html)
+* [ggplot2] (http://bioconductor.org/packages/release/bioc/html/ggplot2.html)
+
+___
+
+## References for tools.
+
+
 
