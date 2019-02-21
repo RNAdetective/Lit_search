@@ -7,7 +7,7 @@ if (length(args)==0) {
 } else if (length(args)==1) {
   args[2] = "out.txt"
 }
-search_topicfinal <- print(paste0("",args[4],"")) #enter search terms here
+search_topicfinal <- paste0("",args[4],"") #enter search terms here
 abs <- paste0(args[1]) #enter directory and name for abstracts to be stored
 info <- paste0(args[2]) #enter directory and name for other pubmed information to be stored
 search_query <- EUtilsSummary(search_topicfinal,retmax=paste0(args[3])) #runs pubmed search

@@ -289,7 +289,6 @@ do
     config_defaults #creates more config files for variables
     echo1=$(echo "starting pubmed search for "$topic"")
     mes_out
-    echo "$search_com"
     if [ "$search_com" == "<>" ]; then
       pubmed_searchman #if you want to enter your own topics figure out how to get rid of NA
     else
@@ -313,14 +312,18 @@ IFS=$OLDIFS
 ################################################################################################################
 #CREATE PIECHART FOR EACH INDEX MEASURE IN STATS FROM PUBMED SEARCH ***
 ################################################################################################################
-INPUT="$dir_path"/"$topic"topics.csv
+INPUT="$main_dir"/scripts/topics.csv
 {
 [ ! -f $INPUT ] && { echo "$INPUT file not found"; exit 99; }
 while IFS=, read -r search topic 
 do
+  main_dir="$1"
+  dir_path="$main_dir"/"$topic"
   echo1=$(echo "starting summarizing results for "$topic"")
   mes_out
   if [ "$topic" != "" ]; then
+    config_text #creates config file to store variables
+    config_defaults #creates more config files for variables
     INPUT="$dir_path"/"$topic"stat_names.csv
     {
     [ ! -f $INPUT ] && { echo "$INPUT file not found"; exit 99; }
@@ -631,6 +634,8 @@ do
     mes_out
   fi
 done
+} < $INPUT
+IFS=$OLDIFS
 ################################################################################################################
 # bar chart for total number of articles for each topic with or wout abstracts ***
 ################################################################################################################

@@ -1,6 +1,10 @@
-neurological_terms,congenital_terms,symptoms_terms,innate_terms,stemcell_terms,epidemiology_terms,
-neurological,congenital,microcephaly,IFNA,mouse,mosquitoes,
-brain,TORCH,lissencephaly,interferon alpha,NPC,arbovirus,
-spine,fetus,chorioretinitis,STAT,pleuropotent,transmission,
-CNS,pregnancy,ventriculomegaly,TLR3,culture,outbreak,
-astrocyte,development,pregnancy,RIG1,primates,CDC,
+neurological_terms,congenital_terms,symptoms_terms,innate_terms,
+neurological,congenital,microcephaly,IFNA,
+brain,TORCH,lissencephaly,interferon alpha,
+spine,fetus,chorioretinitis,STAT,
+CNS,pregnancy,ventriculomegaly,TLR3,
+astrocyte,developmental,calium deposit,RIG1,
+central nervous system,maternal,subcortical calcifications,innate immunity,
+neurology,pregnancy,seizures,interferon gamma,
+
+
