@@ -45,20 +45,37 @@ ___
 
 
 ## Output Files
+   *whenever there is a graph the .csv with the same name is the file used to make the graph.
 
 in the lit_search directory you will find 
 
+   * totals_list.csv which is a list of the all the unique articles found between all the topics entered
+   * abstotal.tiff is the bar graph for the number of articles with abstracts found for each topic
+   * totals.tiff is bar graph of total number of articles found for each topic.
+
 1.) Scripts with all the scripts and index files needed to run lit_search
 
-2.) Categories folder with 
+2.) Categories folder csv file for graphs is the final folder
 
-3.) Final folder with
+3.) Final folder with graphs for percent of total articles for each category compared between topics. A different bar graph for each topic.
 
-4.) Topic_stats with
+4.) Topic_stats with the PMID for all the articles found for a topic.
 
 5.) There will be a folder for each topic name from column 2 of your topics.csv file in the scripts folder.
 
-   1.) In these folders you will find 
+   * In these folders you will find topicabPMID.csv which is the list of all the PMID that had abstracts with them,
+   * topicabstracts.csv is the file with abstracts used for the search category search. 
+   * ZIKVstat_names.csv is index file for data mining. 
+   * ZIKVstats.csv which is metadata about each article downloaded.
+   * There is also a folder called stats
+      * In here is a folder for each meta data category country year accepted and year received (these can be changed manually in the Rscript)
+      * In these folders you will find the pie chart and the csv files to make it.
+   * There is also a folder called final
+      * In here are the bargraphs for how many articles contained each search word by search category and topictotalwtot.tiff is the bargraph showing how many articles contained at least one search term shown by categories for the topic.
+      * There is also a folder for each search category with a pie chart for how many articles contained at least one search term and the csv of all the unique PMID for that category.
+      * Within charts folder you will find a pie chart for each individual search term number of articles compared to all for the topic.
+      * Within final are the PMID list for each search term.
+      * Within totals there are csv files for the charts in charts folder.
 
 ___
 
