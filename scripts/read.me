@@ -1,70 +1,44 @@
 About Lit_search
 
-    Allows for searching pubmed with unlimited main one word topics
-    Then it allows for up to 8 search categories of unlimited number of search terms to search articles already collected on the main topic.
+    Allows for searching pubmed with up to 6 main topics
+    Then it allows for up to 4 search categories of search terms to search articles found on the main topic.
     Creates pie charts for number of articles found containing search terms and for how many articles were found in each search category.
     Creates bar graphs summarized how many articles for each search term in a category and each category in a topic and also for how many results were found for each topic in the run.
 
 Getting Started
 
-1.) Make sure you have the R packages ggplot2 and RISmed installed in R
+1.) Make sure you have the R packages ggplot2 and RISmed installed in R 2.) Download the compressed file and uncompress in your working directory. 3.) Fill out the search_terms.csv 1.) The first row contains the first search term with terms after it this tells the tool what your categories are named 2.) the second row has to contain the first search term but this time without the terms at the end 4.) enter the following command into your terminal 1.) where topic is your search topic to collect articles from pubmed about. 2.) ~ is the working directory where you uncompressed the lit_search file from github.
 
-2.) Download the compressed file and uncompress in your working directory.
+bash ~/lit_search/scripts/litsearch.sh ~/lit_search topic1 topic2 topic3 topic4 topic5 topic6
 
-3.) Fill ou the topics.csv file in the lit_search/scripts/ directory
 
-    The first column is for the topics you would like to search for currenly it is single term only
+When the script is done you will find all results in the lit_search folder.
 
-    The second column is for what you would like to name that topic for the file system
+each topic entered will have its own folder
+with files in the main folder 
+topicabPMID.csv is a list of all PMIDs of the articles found with abstracts.
+topicabstracts is a text file with all the abstracts for that topic
+topicstats.csv is a list of PMID country and year for the articles downloads for the topic
+summary.txt is a summary file from the article retrieval from pubmed.
+There is a folder under each topic called final
+In here you will find a folder for each search term you entered to search the abstracts with
+This folder contains a csv file and tiff file for each search term you entered
+The csv file is the total number of PMID that had you search term in the abstract and the second row is the total number of articles with abstracts that you downloaded minus the abstracts with your search word totaling the number of articles not containing your word.
+There is a also a folder in this directory final
+In this folder you will find a list for each search term you entered containing all the PMID of abstracts with your search term in them.
+This is also a list and piechart for all the search terms added together from the search_terms.csv files and named with the first search term in the search_terms.csv file.
 
-***If you have more then one search term for your topic you can run RISmed manually with the following command where topic_name is the name of topic for the folder system and topic1-10 are the search terms to combine for your topic. For example topic_name = ZIKV and topic1 = ZIKV topic2 = AND topic3 = zika topic4 = zikv topic5 = OR topic6 = ZIKV and so on. Then you can run the litsearch.sh file after for the rest of the single term topics
+in the main lit_search folder there is also a folder called final
+in this folder there is a folder for each set of search terms in the search_terms.csv file
+in that folder are count files saying how many articles contained at least one of your search terms in search_terms.csv there are a list of PMID for each main topic as well as the topic_counts all together and a .tiff file with the pie chart for how many articles out of the articles downloaded for each topic mention your topic at least once.
 
-Rscript ~/lit_search/scripts/pubmedman.R ~/lit_search/topic_name/topic_nameabstract.csv ~/lit_search/topic_name/topic_namestats.csv 100000 topic1 topic2 topic3 topic4 topic5 topic6 topic7 topic8 topic9 topic10
 
-4.) Fill out the search_terms.csv in the lit_search/scripts/ directory
 
-    The first row contains the first search term with terms after it this tells the tool what your categories are named
+in the main lit_search folder called topic_stats 
+In this folder there are 
 
-    The second row and on is for single term list of what you would like to search for
 
-5.) enter the following command into your terminal
 
-    Where topic is your search topic to collect articles from pubmed about.
+ 
+ 
 
-    Where ~ is the working directory where you uncompressed the lit_search file from github.
-
-bash ~/lit_search/scripts/litsearch.sh ~/lit_search
-
-Output Files
-
-*whenever there is a graph the .csv with the same name is the file used to make the graph.
-
-in the lit_search directory you will find
-
-    totals_list.csv which is a list of the all the unique articles found between all the topics entered
-    abstotal.tiff is the bar graph for the number of articles with abstracts found for each topic
-    totals.tiff is bar graph of total number of articles found for each topic.
-
-1.) Scripts with all the scripts and index files needed to run lit_search
-
-2.) Categories folder csv file for graphs is the final folder
-
-3.) Final folder with graphs for percent of total articles for each category compared between topics. A different bar graph for each topic.
-
-4.) Topic_stats with the PMID for all the articles found for a topic.
-
-5.) There will be a folder for each topic name from column 2 of your topics.csv file in the scripts folder.
-
-    In these folders you will find topicabPMID.csv which is the list of all the PMID that had abstracts with them,
-    topicabstracts.csv is the file with abstracts used for the search category search.
-    ZIKVstat_names.csv is index file for data mining.
-    ZIKVstats.csv which is metadata about each article downloaded.
-    There is also a folder called stats
-        In here is a folder for each meta data category country year accepted and year received (these can be changed manually in the Rscript)
-        In these folders you will find the pie chart and the csv files to make it.
-    There is also a folder called final
-        In here are the bargraphs for how many articles contained each search word by search category and topictotalwtot.tiff is the bargraph showing how many articles contained at least one search term shown by categories for the topic.
-        There is also a folder for each search category with a pie chart for how many articles contained at least one search term and the csv of all the unique PMID for that category.
-        Within charts folder you will find a pie chart for each individual search term number of articles compared to all for the topic.
-        Within final are the PMID list for each search term.
-        Within totals there are csv files for the charts in charts folder.

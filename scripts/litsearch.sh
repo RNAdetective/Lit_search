@@ -182,6 +182,7 @@ file_out="$wkd"/totals/"$search"totals.csv;
     column2="$totals2" # total number of articles with abstracts 
     find_totals2 # adds totals to file
     file_in="$wkd"/totals/"$search"totals.csv;
+    sed -i 's/ /_/g' "$file_in"
     file_out="$wkd"/charts/"$search"totals.tiff;
     tool=chart;
     name=totals;

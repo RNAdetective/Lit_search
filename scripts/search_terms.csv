@@ -1,10 +1,8 @@
-neurological_terms,congenital_terms,symptoms_terms,innate_terms,
-neurological,congenital,microcephaly,IFNA,
-brain,TORCH,lissencephaly,interferon alpha,
-spine,fetus,chorioretinitis,STAT,
-CNS,pregnancy,ventriculomegaly,TLR3,
-astrocyte,developmental,calium deposit,RIG1,
-central nervous system,maternal,subcortical calcifications,innate immunity,
-neurology,pregnancy,seizures,interferon gamma,
-
-
+neurological_terms,congenital_terms,symptoms_terms,innate_terms
+neurological,congenital,microcephaly,IFNA
+brain,TORCH,lissencephaly,interferon alpha
+spine,fetus,chorioretinitis,STAT
+CNS,pregnancy,ventriculomegaly,TLR3
+astrocyte,developmental,calium deposit,RIG1
+central nervous system,maternal,subcortical calcifications,innate immunity
+neurology,pregnancy,seizures,interferon gamma
