@@ -46,7 +46,19 @@ ___
 
 ## Output Files
 
+in the lit_search directory you will find 
 
+1.) Scripts with all the scripts and index files needed to run lit_search
+
+2.) Categories folder with 
+
+3.) Final folder with
+
+4.) Topic_stats with
+
+5.) There will be a folder for each topic name from column 2 of your topics.csv file in the scripts folder.
+
+   1.) In these folders you will find 
 
 ___
 
