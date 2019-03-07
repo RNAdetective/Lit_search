@@ -43,13 +43,16 @@ else
 fi
 }
 pubmed_searchman() {
-search_file="$dir_path"/scripts/topic.csv
+file_outxml="$dir_path"/"$topic"all.xml;
 file_outabs="$dir_path"/"$topic"abstracts.csv; #names of pubmed search out put files
-file_outstats="$dir_path"/"$topic"stats.csv;
+file_outstats="$dir_path"/"$topic"stats.csv; 
 file_outsum="$dir_path"/summary.txt;
-num_rec=100000; #max number of records to return from pubmed
 if [[ ! -s "$file_outabs" && ! -s "$file_outstats" ]]; then
-  Rscript --vanilla "$main_dir"/scripts/pubmedother.R $file_outabs $file_outstats $num_rec $sc2 $sc3 $sc4 $sc5 $sc6 $sc7 $sc8 $sc9 $sc10 $sc11 $sc12 $sc13     #runs the Rscript to use RISmed to search pubmed database
+  search_com=$(echo ""$search"")
+  esearch -db pubmed -query "$search_com" | efetch -format xml >> "$file_outxml"
+  cat "$file_outxml" | xtract -pattern PubmedArticle -tab "|" -def "NA" -element MedlineCitation/PMID Country YearA YearR | sed 's/,//g' | sed 's/|/,/g' | sed 's/ /_/g' | awk -F',' '{print NR, $0}' | sed 's/ /,/g' | sed '1i ,PMID,Country,YearA,YearR' >> "$file_outstats"
+  cat "$file_outxml" | xtract -pattern PubmedArticle -tab "|" -def "*NA*" -element MedlineCitation/PMID ArticleTitle AbstractText | sed 's/,//g' | sed 's/|/,/g' | sed 's/^/,&/g' |  awk -F',' '{print NR, $0}' | sed '1i ,PMID,Title,Abstract' >> "$file_outabs"
+  cat "$file_outxml" | xtract -pattern PubmedArticle -tab "|" -def "NA" -element MedlineCitation/PMID | sed 's/,//g' | sed 's/|/,/g' >> "$file_outsum"
 else
   echo ""$file_outstats" and "$file_outabs" FOUND"
 fi
@@ -59,10 +62,9 @@ create_stat() {
 cat "$file_in" | cut -d',' -f3,4,5,6,7 | sed -n '1p' | sed "s/,/\n/g" | awk '{$2=NR}1' | awk '{$3=$2+2}1' | sed 's/ /,/g' | sed 's/"//g' >> "$file_out" #makes a metadata names file for analysis
 }
 total_wabs() {
-cat "$file_in" | sed 's/""/*NA*/g' | sed 's/"//g' | awk -F',' '{ if ( $4 != "*NA*" ) { print $2; } }' >> "$file_out" #removes all articles without an abstract and creates a list of PMID that contained abstracts
+cat "$file_in" | sed 's/""/*NA*/g' | sed 's/"//g' | cut -d',' -f2  >> "$file_out" #removes all articles without an abstract and creates a list of PMID that contained abstracts
 }
 unique() {
-cat "$file_in" | cut -d',' -f2 >> "$file_out2" #takes article list downloaded from pubmed and creates a PMIDlist
 cat "$file_in" | sed -e 1d | sed -e 's/ /_/g' | cut -d',' -f$column_num | sort | uniq -ci | sed 's/ \+/,/g' | sed 's/^.//g' | sed 's/"//g' | sed '1i freq,name' >> "$file_out" #counts number of unique PMID in article list for each of the metadata terms searched for and creates a file with columns frequencies and metadata variable names for example countrys would have USA, UK, Canada ect. 
 }
 Country() {
@@ -280,9 +282,8 @@ mv temp.csv "$main_dir"/scripts/topics.csv
 INPUT="$main_dir"/scripts/topics.csv
 {
 [ ! -f $INPUT ] && { echo "$INPUT file not found"; exit 99; }
-while IFS=, read -r search_com topic sc2 sc3 sc4 sc5 sc6 sc7 sc8 sc9 sc10 sc11 sc12 sc13
+while IFS=, read -r topic search
 do
-  if [ "$topic" != "" ]; then
     main_dir="$1"; # user defined main directory
     dir_path="$main_dir"/"$topic";
     create_dir #creates directories for results
@@ -290,12 +291,7 @@ do
     config_defaults #creates more config files for variables
     echo1=$(echo "starting pubmed search for "$topic"")
     mes_out
-    if [ "$search_com" == "<>" ]; then
-      pubmed_searchman #if you want to enter your own topics figure out how to get rid of NA
-    else
-      pubmed_search #finds all pubmed articles for topic
-    fi
-    topic="$topic"
+    pubmed_searchman #finds all pubmed articles for topic
     file_in="$dir_path"/"$topic"stats.csv
     file_out="$dir_path"/"$topic"stat_names.csv
     tool=create_stat #gets article metadata ready for analysis
@@ -304,9 +300,8 @@ do
     file_out="$dir_path"/"$topic"abPMID.csv
     tool=total_wabs #gets article abstract file ready for analysis
     run_tools
-    echo1=$(echo "pubmed search for "$topic"")
+    echo1=$(echo "pubmed search for "$topic" done")
     mes_out
-  fi
 done
 } < $INPUT
 IFS=$OLDIFS
@@ -316,7 +311,7 @@ IFS=$OLDIFS
 INPUT="$main_dir"/scripts/topics.csv
 {
 [ ! -f $INPUT ] && { echo "$INPUT file not found"; exit 99; }
-while IFS=, read -r search topic 
+while IFS=, read -r topic search 
 do
   main_dir="$1"
   dir_path="$main_dir"/"$topic"
@@ -330,8 +325,8 @@ do
     [ ! -f $INPUT ] && { echo "$INPUT file not found"; exit 99; }
     while IFS=, read -r name num column
     do
-      source "$1"/scripts/config.shlib; # load the directory variables
-      cd "$1"/scripts # change directory to those files
+      source ~/lit_search/scripts/config.shlib; # load the directory variables
+      cd ~/lit_search/scripts # change directory to those files
       topic="$(config_get topic)";
       main_dir="$(config_get main_dir)";
       dir_path="$main_dir"/"$topic";

@@ -25,6 +25,6 @@ lb_per <- paste0(round(data$freq/total*100,2),'%')
 lb_name <- paste0(data$name)
 lb_all <- paste0(lb_name," , ",lb_per)
 title <- paste0("out of ",total," pubmed articles")
-tiff(file_out, units="in", width=10, height=10, res=600)
+tiff(file_out, units="in", width=10, height=10, res=200)
 pie(slices,labels=lb_all,col=cols,main=title);
 garbage <- dev.off()
