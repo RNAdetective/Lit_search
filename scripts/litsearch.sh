@@ -1,65 +1,34 @@
-#!/usr/bin/env bash
+temp_file() {
+if [ -s "$dir_path"/temp.csv ];
+then
+  rm "$file_in"
+  mv "$main_dir"/temp.csv "$file_in"
+fi
+}
 create_dir() {
-dp="$main_dir"/"$topic"; #set up directories
-wkd="$dir_path"/final;
-mwkd="$main_dir"/final;
-wkd1="$dir_path"/stats;
-mwkd1="$main_dir"/topic_stats;
-catdir="$main_dir"/categories;
-for i in "$dp" "$wkd" "$mwkd" "$wkd1" "$mwkd1" "$catdir" ;
-do
-  if [ ! -d "$i" ];
-  then
-  mkdir "$i"
-  fi
-done
+if [ ! -d "$new_dir" ];
+then
+  mkdir "$new_dir"
+fi
 }
 config_text() {
-file_out="$main_dir"/scripts/config.cfg;
 if [ -s "$file_out" ]; then
 rm "$file_out"
 fi
 echo "topic=$topic
 main_dir=$main_dir
-" >> "$file_out"
+Lit_search_dir="$Lit_search_dir"" >> "$file_out"
 }
 config_defaults() {
-file_out="$main_dir"/scripts/config.cfg.defaults;
 if [ -s "$file_out" ]; then
 rm "$file_out"
 fi
 echo "topic=Default Value
-main_dir=Default Value" >> "$file_out"
+main_dir=Default Value
+Lit_search_dir=Default Value" >> "$file_out"
 }
-pubmed_search() {
-file_outabs="$dir_path"/"$topic"abstracts.csv; #names of pubmed search out put files
-file_outstats="$dir_path"/"$topic"stats.csv;
-file_outsum="$dir_path"/summary.txt;
-num_rec=100000; #max number of records to return from pubmed
-if [[ ! -s "$file_outabs" && ! -s "$file_outstats" ]]; then
-  Rscript --vanilla "$main_dir"/scripts/pubmed.R $file_outabs $file_outstats $num_rec $search_com #runs the Rscript to use RISmed to search pubmed database
-else
-  echo ""$file_outstats" and "$file_outabs" FOUND"
-fi
-}
-pubmed_searchman() {
-file_outxml="$dir_path"/"$topic"all.xml;
-file_outabs="$dir_path"/"$topic"abstracts.csv; #names of pubmed search out put files
-file_outstats="$dir_path"/"$topic"stats.csv; 
-file_outsum="$dir_path"/summary.txt;
-if [[ ! -s "$file_outabs" && ! -s "$file_outstats" ]]; then
-  search_com=$(echo ""$search"")
-  esearch -db pubmed -query "$search_com" | efetch -format xml >> "$file_outxml"
-  cat "$file_outxml" | xtract -pattern PubmedArticle -tab "|" -def "NA" -element MedlineCitation/PMID Country YearA YearR | sed 's/,//g' | sed 's/|/,/g' | sed 's/ /_/g' | awk -F',' '{print NR, $0}' | sed 's/ /,/g' | sed '1i ,PMID,Country,YearA,YearR' >> "$file_outstats"
-  cat "$file_outxml" | xtract -pattern PubmedArticle -tab "|" -def "*NA*" -element MedlineCitation/PMID ArticleTitle AbstractText | sed 's/,//g' | sed 's/|/,/g' | sed 's/^/,&/g' |  awk -F',' '{print NR, $0}' | sed '1i ,PMID,Title,Abstract' >> "$file_outabs"
-  cat "$file_outxml" | xtract -pattern PubmedArticle -tab "|" -def "NA" -element MedlineCitation/PMID | sed 's/,//g' | sed 's/|/,/g' >> "$file_outsum"
-else
-  echo ""$file_outstats" and "$file_outabs" FOUND"
-fi
-}
-
 create_stat() { 
-cat "$file_in" | cut -d',' -f3,4,5,6,7 | sed -n '1p' | sed "s/,/\n/g" | awk '{$2=NR}1' | awk '{$3=$2+2}1' | sed 's/ /,/g' | sed 's/"//g' >> "$file_out" #makes a metadata names file for analysis
+cat "$file_in" | cut -d',' -f3,4,5,6,7 | sed -n '1p' | sed "s/,/\n/g" | awk '{$2=NR}1' | awk '{$3=$2+2}1' | awk '{$4="'$topic'"}1' | sed 's/ /,/g' | sed 's/"//g' >> "$file_out" #makes a metadata names file for analysis
 }
 total_wabs() {
 cat "$file_in" | sed 's/""/*NA*/g' | sed 's/"//g' | cut -d',' -f2  >> "$file_out" #removes all articles without an abstract and creates a list of PMID that contained abstracts
@@ -75,10 +44,7 @@ Year() {
 awk -F',' '{ if ( $2 != "NA" ) { print } }' "$file_out" >> "$file_out4" #filters any article that does not have a date record in the metadata
 }
 chart() {
-Rscript --vanilla "$main_dir"/scripts/charts.R $file_in $file_out $name #creates a piechart from a file with frequency in column 1 and names in column2
-}
-barchart() {
-Rscript --vanilla "$main_dir"/scripts/barchart.R $file_in $file_out #creates bar charts
+Rscript --vanilla "$Lit_search_dir"/charts.R $file_in $file_out $name #creates a piechart from a file with frequency in column 1 and names in column2
 }
 find_totals() {
 if [[ ! -s "$file_out" && "$header" == "no" ]]; then
@@ -98,71 +64,29 @@ find_totals3() {
 add_header() {
 echo "name,freq" >> "$file_out"
 }
-run_tools() {
-if [ ! -s "$file_out" ]; then
-  if [ -s "$file_in" ]; then
-    "$tool"
-  else 
-    echo ""$file_in" MISSING"
-  fi
-else
-echo ""$file_out" already FOUND"
-fi
-}
-search_term_matrix1() {
-cat "$wkd"/* | sed '1d' | sort -iu | sed '1i name,freq' >> "$file_out"
-}
-search_term_matrix2() {
-cat "$wkd"/* | sed '1d' | sort -id | sort -u | sed '1i name,freq' >> "$file_out"
-}
-search_term_matrix3() {
-cat "$wkd"/* | sed '1d' | sort -id |sort -iu | sort -u | sed '1i name,freq' >> "$file_out"
-}
-search_term_matrix4() {
-cat "$wkd"/* | sed '1d' | sort -id |sort -iu | sort -iu | sort -u | sed '1i name,freq' >> "$file_out"
-}
-rmlast() {
-cat "$file_in" | head -n -1 > temp.csv ; mv temp.csv "$file_in"
+set_cat_var() {
+cat "$config" | sed '/^'$phrase'/ d' >> temp.txt
+rm "$config" 
+mv temp.txt "$config"
+echo ""$phrase2"" >> "$Lit_search_dir"/config.cfg.defaults
+} 
+create_absearch() {
+wkd="$dir_path"/final/"$search_cat";
+new_dir="$wkd"
+create_dir
+for i in final totals charts ; do
+  wkd="$dir_path"/final/"$search_cat";
+  new_dir="$wkd"/"$i"
+  create_dir
+done
 }
 filter_abs() {
 find "$file_in" -type f | xargs grep -n "$search" >> "$file_out"
 cat "$file_out" | cut -d',' -f2 >> "$file_out2"
 rm "$file_out"
 }
-create_absearch() {
-wkd="$dir_path"/final/"$search_cat";
-dtm="$wkd"
-createdir
-for i in final totals charts ; do
-  wkd="$dir_path"/final/"$search_cat";
-  dtm="$wkd"/"$i"
-  createdir
-done
-}
-fix_header() {
-cat "$file_in" | awk -F',' '{ if ( $1 != "name" ) { print $1,$2; } }' | sed '1i name,freq' >> temp.csv
-rm "$file_in"
-mv temp.csv "$file_in"
-sed -i 's/ /,/g' "$file_in"
-}
-createdir() {
-if [ ! -d "$dtm" ];
-then
-  mkdir "$dtm"
-fi
-}
-set_cat_var() {
-cat "$config" | sed '/^'$phrase'/ d' >> temp.txt
-rm "$config" 
-mv temp.txt "$config"
-echo ""$phrase2"" >> /home/user/lit_search/scripts/config.cfg.defaults
-} 
-
 run_ind_st() {
 wkd="$dir_path"/final/"$search_cat";
-topic="$(config_get topic)";
-main_dir="$(config_get main_dir)";
-dir_path="$main_dir"/"$topic";
 file_in="$dir_path"/"$topic"abstracts.csv;
 file_out="$dir_path"/"$search".csv;
 file_out2="$wkd"/final/"$search"ID.csv;
@@ -191,14 +115,35 @@ file_out="$wkd"/totals/"$search"totals.csv;
     run_tools # will create pie charts for search term against not search term
   fi
 } 
+fix_header() {
+cat "$file_in" | awk -F',' '{ if ( $1 != "name" ) { print $1,$2; } }' | sed '1i name,freq' >> temp.csv
+rm "$file_in"
+mv temp.csv "$file_in"
+sed -i 's/ /,/g' "$file_in"
+}
+search_term_matrix1() {
+cat "$wkd"/* | sed '1d' | sort -iu | sed '1i name,freq' >> "$file_out"
+}
+search_term_matrix2() {
+cat "$wkd"/* | sed '1d' | sort -id | sort -u | sed '1i name,freq' >> "$file_out"
+}
+search_term_matrix3() {
+cat "$wkd"/* | sed '1d' | sort -id |sort -iu | sort -u | sed '1i name,freq' >> "$file_out"
+}
+search_term_matrix4() {
+cat "$wkd"/* | sed '1d' | sort -id |sort -iu | sort -iu | sort -u | sed '1i name,freq' >> "$file_out"
+}
 total_cat_terms() {
 wkd="$dir_path"/final/"$search_cat"/totals; #collection of PMID files for each search term
 file_out="$dir_path"/final/"$topic"total"$search_cat".csv; 
 search_term_matrix1 #totals of articles for each search term
 sed -i '/other/d' "$file_out"
+}
+barchart() {
+Rscript --vanilla "$Lit_search_dir"/barchart.R $file_in $file_out #creates bar charts
 } 
 searchterm_bargraph() {
-dir_path="$main_dir"/"$topic"
+dir_path="$results_dir"/"$topic"
 file_in="$dir_path"/final/"$topic"total"$search_cat".csv; #freq,search_cat
 fix_header
 file_in="$dir_path"/final/"$topic"total"$search_cat".csv; #freq,search_cat
@@ -267,31 +212,85 @@ file_out="$dir_path"/final/"$topic"totalwtot"$num".tiff
 tool=barchart;
 run_tools # bar chart for each topic with categories showing how many found.
 }
+run_tools() {
+if [ ! -f "$file_out" ]; # IF OUTPUT FILE IS NOT THERE
+then
+  if [ -f "$file_in" ]; # IF INPUT THERE
+  then
+    echo1=$(echo "FOUND $file_in STARTING $tool");
+    mes_out
+    $tool # TOOL
+  else
+    echo1=$(echo "CANNOT FIND "$file_in" FOR "$sample"");
+  fi
+  if [[ -f "$file_out" ]]; # IF OUTPUT IS THERE
+  then
+    echo1=$(echo "FOUND $file_out FINISHED $tool");
+    mes_out # ERROR OUTPUT IS THERE
+  else 
+    echo1=$(echo "CANNOT FIND $file_out FOR THIS "$sample"");
+    mes_out # ERROR INPUT NOT THERE
+  fi
+else
+  echo1=$(echo "FOUND $file_out FINISHED $tool")
+  mes_out # ERROR OUTPUT IS THERE
+fi
+}
 mes_out() {
+dirqc="$dir_path"/quality_control
 DATE_WITH_TIME=$(date +%Y-%m-%d_%H-%M-%S)
 echo "'$DATE_WITH_TIME' $echo1
 ___________________________________________________________________________"
+new_dir="$results_dir"/time_check
+create_dir
+echo "'$DATE_WITH_TIME',"$run","$file_in","$tool"" >> "$results_dir"/time_check/"$run"time_check.csv
 }
+DATE_WITH_TIME=$(date +%Y-%m-%d_%H-%M-%S)
+TIME_HOUR=$(date +%H)
+TIME_MIN=$(date +%M)
+TIME_SEC=$(date +%S)
 #############################################################################################################
 #SEARCH FOR KEY TERMS ***
 ################################################################################################################
 main_dir="$1"; # user defined main directory
-cat "$main_dir"/scripts/topics.csv | sort -i >> temp.csv
-rm "$main_dir"/scripts/topics.csv
-mv temp.csv "$main_dir"/scripts/topics.csv
-INPUT="$main_dir"/scripts/topics.csv
+results_dir="$2"
+new_dir="$2"
+create_dir
+Lit_search_dir="$main_dir"/Lit_search-master/Lit_search-master/scripts
+file_in="$Lit_search_dir"/topics.csv
+cat "$file_in" | sort -i >> "$main_dir"/temp.csv
+temp_file
+INPUT="$Lit_search_dir"/topics.csv
 {
 [ ! -f $INPUT ] && { echo "$INPUT file not found"; exit 99; }
 while IFS=, read -r topic search
 do
     main_dir="$1"; # user defined main directory
-    dir_path="$main_dir"/"$topic";
+    Lit_search_dir="$main_dir"/Lit_search-master/Lit_search-master/scripts
+    results_dir="$2"
+    dir_path="$results_dir"/"$topic";
+    new_dir="$dir_path"
     create_dir #creates directories for results
+    wkd="$dir_path"/final;
+    new_dir="$wkd"
+    create_dir
+    file_out="$Lit_search_dir"/config.cfg;
     config_text #creates config file to store variables
+    file_out="$main_dir"/config.cfg.defaults;
     config_defaults #creates more config files for variables
     echo1=$(echo "starting pubmed search for "$topic"")
     mes_out
-    pubmed_searchman #finds all pubmed articles for topic
+    file_outabs="$dir_path"/"$topic"abstracts.csv; #names of pubmed search out put files
+    file_outstats="$dir_path"/"$topic"stats.csv;
+    file_outsum="$dir_path"/summary.txt;
+    num_rec=100000; #max number of records to return from pubmed
+    if [[ ! -s "$file_outabs" && ! -s "$file_outstats" ]]; then
+      sed -i 's/search_topicfinal/"'$search'"/g' "$Lit_search_dir"/pubmed.R
+      Rscript --vanilla "$Lit_search_dir"/pubmed.R $file_outabs $file_outstats $num_rec $search_com #runs the Rscript to use RISmed to search pubmed database
+      sed -i 's/"'$search'"/search_topicfinal/g' "$Lit_search_dir"/pubmed.R
+    else
+      echo ""$file_outstats" and "$file_outabs" FOUND"
+    fi
     file_in="$dir_path"/"$topic"stats.csv
     file_out="$dir_path"/"$topic"stat_names.csv
     tool=create_stat #gets article metadata ready for analysis
@@ -308,31 +307,33 @@ IFS=$OLDIFS
 ################################################################################################################
 #CREATE PIECHART FOR EACH INDEX MEASURE IN STATS FROM PUBMED SEARCH ***
 ################################################################################################################
-INPUT="$main_dir"/scripts/topics.csv
+INPUT="$Lit_search_dir"/topics.csv
 {
 [ ! -f $INPUT ] && { echo "$INPUT file not found"; exit 99; }
 while IFS=, read -r topic search 
 do
   main_dir="$1"
-  dir_path="$main_dir"/"$topic"
+  Lit_search_dir="$main_dir"/Lit_search-master/Lit_search-master/scripts
+  results_dir="$2"
+  dir_path="$results_dir"/"$topic"
   echo1=$(echo "starting summarizing results for "$topic"")
   mes_out
   if [ "$topic" != "" ]; then
-    config_text #creates config file to store variables
-    config_defaults #creates more config files for variables
+    cd "$Lit_search_dir"
     INPUT="$dir_path"/"$topic"stat_names.csv
     {
     [ ! -f $INPUT ] && { echo "$INPUT file not found"; exit 99; }
-    while IFS=, read -r name num column
+    while IFS=, read -r name num column topic
     do
-      source ~/lit_search/scripts/config.shlib; # load the directory variables
-      cd ~/lit_search/scripts # change directory to those files
-      topic="$(config_get topic)";
-      main_dir="$(config_get main_dir)";
-      dir_path="$main_dir"/"$topic";
+      source config.shlib; # load the directory variables
+      main_dir="$1"
+      results_dir="$2"
+      dir_path="$results_dir"/"$topic";
+      new_dir="$dir_path"/stats
+      create_dir
       wkd="$dir_path"/stats/"$name";
-      dtm="$wkd"
-      createdir
+      new_dir="$wkd"
+      create_dir
       file_in="$dir_path"/"$topic"stats.csv;
       file_out="$wkd"/"$name".csv;
       file_out2="$main_dir"/topic_stats/"$topic"stats.csv;
@@ -367,45 +368,92 @@ do
     done
     } < $INPUT
     IFS=$OLDIFS
+  fi
+done
+} < $INPUT
+IFS=$OLDIFS
 ################################################################################################################
 #CREATES TOTAL NUMBER OF ARTICLES FOUND FOR EACH TOPIC ***
 ################################################################################################################
+INPUT="$Lit_search_dir"/topics.csv
+{
+[ ! -f $INPUT ] && { echo "$INPUT file not found"; exit 99; }
+while IFS=, read -r topic search 
+do
+  main_dir="$1"
+  Lit_search_dir="$main_dir"/Lit_search-master/Lit_search-master/scripts
+  results_dir="$2"
+  dir_path="$results_dir"/"$topic"
+  echo1=$(echo "starting summarizing results for "$topic"")
+  mes_out
+  if [ "$topic" != "" ]; then
     file_in="$dir_path"/"$topic"stats.csv;
-    file_out="$main_dir"/totals.csv;
+    file_out="$results_dir"/totals.csv;
     if [ -s "$file_in" ]; then
       column1="$topic";
       totals=$(cat "$file_in" | wc -l);
       column2="$totals";
       header=yes
-      find_totals # this will find how many articles were found with metadata
+      echo1=$("Starting totals for "$file_in"")
+      mes_out
+      echo ""$column1","$column2"" >> "$file_out" # this will find how many articles were found with metadata
     fi
     if [ -s "$file_in" ]; then
       file_in="$dir_path"/"$topic"abPMID.csv
-      file_out="$main_dir"/abstotal.csv
+      file_out="$results_dir"/abstotal.csv
       column1="$topic";
       totals=$(cat "$file_in" | wc -l);
       column2="$totals";
       header=yes
-      find_totals # this will find how many articles were found with an abstract
+      echo1=$("Starting totals for "$file_in"")
+      mes_out
+      echo ""$column1","$column2"" >> "$file_out" # this will find how many articles were found with an abstract
     fi
+  fi
+done
+} < $INPUT
+IFS=$OLDIFS
 ################################################################################################################
 #SEARCH THE ABSTRACTS FOR EACH **TERM** IN A CATAGORY AND MAKE GRAPHS ***
 ################################################################################################################
-    search_file="$main_dir"/scripts/search_terms.csv
+INPUT="$Lit_search_dir"/topics.csv
+{
+[ ! -f $INPUT ] && { echo "$INPUT file not found"; exit 99; }
+while IFS=, read -r topic search 
+do
+  main_dir="$1"
+  Lit_search_dir="$main_dir"/Lit_search-master/Lit_search-master/scripts
+  results_dir="$2"
+  dir_path="$results_dir"/"$topic"
+  config="$Lit_search_dir"/config.cfg.defaults
+  phrase=$(echo "topic=")
+  phrase2=$(echo "topic="$topic"")
+  set_cat_var
+  echo1=$(echo "starting summarizing results for "$topic"")
+  mes_out
+  if [ "$topic" != "" ]; then
+    search_file="$Lit_search_dir"/search_terms.csv
     for number in {1..8} ;
     do 
       search_cat=$(awk -F, 'NR==1{print $'$number'}' "$search_file"); #grep header name from search_terms file those are search term catagories
       if [ "$search_cat" != "" ]; then
-        create_absearch
-        config=/home/user/lit_search/scripts/config.cfg.defaults
+        wkd="$dir_path"/final/"$search_cat";
+        new_dir="$wkd"
+        create_dir
+        for i in final totals charts ; do
+          wkd="$dir_path"/final/"$search_cat";
+          new_dir="$wkd"/"$i"
+          create_dir
+        done
+        config="$Lit_search_dir"/config.cfg.defaults
         phrase=$(echo "search_cat=")
         phrase2=$(echo "search_cat="$search_cat"")
         set_cat_var
-        config=/home/user/lit_search/scripts/config.cfg.defaults
+        config="$Lit_search_dir"/config.cfg.defaults
         phrase=$(echo "catnum=")
         phrase2=$(echo "catnum="$number"")
         set_cat_var
-        config=/home/user/lit_search/scripts/config.cfg.defaults
+        config="$Lit_search_dir"/config.cfg.defaults
         phrase=$(echo "search=")
         phrase2=$(echo "search=catgor"$catnum"")
         set_cat_var
@@ -417,8 +465,12 @@ do
           read
           while IFS=, read -r catgor1 catgor2
           do
-            source /home/user/lit_search/scripts/config.shlib; # load the config library functions
-            cd /home/user/lit_search/scripts #cd directory to where config files are stored
+            main_dir="$1"
+            Lit_search_dir="$main_dir"/Lit_search-master/Lit_search-master/scripts
+            results_dir="$2"
+            dir_path="$results_dir"/"$topic"
+            cd "$Lit_search_dir" #cd directory to where config files are stored
+            source config.shlib; # load the config library functions
             catnum="$(config_get catnum)";
             search_cat="$(config_get search_cat)";  
             search="$catgor1";
@@ -443,8 +495,8 @@ do
           read
           while IFS=, read -r catgor1 catgor2 catgor3 catgor4 catgor5 catgor6 catgor7 catgor8
           do
-            source /home/user/lit_search/scripts/config.shlib; # load the config library functions
-            cd /home/user/lit_search/scripts #cd directory to where config files are stored
+            source "$Lit_search_dir"/config.shlib; # load the config library functions
+            cd "$Lit_search_dir" #cd directory to where config files are stored
             catnum="$(config_get catnum)";
             search_cat="$(config_get search_cat)";  
             search="$catgor2";
@@ -469,8 +521,8 @@ do
           read
           while IFS=, read -r catgor1 catgor2 catgor3 catgor4 catgor5 catgor6 catgor7 catgor8
           do
-            source /home/user/lit_search/scripts/config.shlib; # load the config library functions
-            cd /home/user/lit_search/scripts #cd directory to where config files are stored
+            source "$Lit_search_dir"/config.shlib; # load the config library functions
+            cd "$Lit_search_dir" #cd directory to where config files are stored
             catnum="$(config_get catnum)";
             search_cat="$(config_get search_cat)";  
             search="$catgor3";
@@ -495,8 +547,8 @@ do
           read
           while IFS=, read -r catgor1 catgor2 catgor3 catgor4 catgor5 catgor6 catgor7 catgor8
           do
-            source /home/user/lit_search/scripts/config.shlib; # load the config library functions
-            cd /home/user/lit_search/scripts #cd directory to where config files are stored
+            source "$Lit_search_dir"/config.shlib; # load the config library functions
+            cd "$Lit_search_dir" #cd directory to where config files are stored
             catnum="$(config_get catnum)";
             search_cat="$(config_get search_cat)";  
             search="$catgor4";
@@ -521,8 +573,8 @@ do
           read
           while IFS=, read -r catgor1 catgor2 catgor3 catgor4 catgor5 catgor6 catgor7 catgor8
           do
-            source /home/user/lit_search/scripts/config.shlib; # load the config library functions
-            cd /home/user/lit_search/scripts #cd directory to where config files are stored
+            source "$Lit_search_dir"/config.shlib; # load the config library functions
+            cd "$Lit_search_dir" #cd directory to where config files are stored
             catnum="$(config_get catnum)";
             search_cat="$(config_get search_cat)";  
             search="$catgor5";
@@ -547,8 +599,8 @@ do
           read
           while IFS=, read -r catgor1 catgor2 catgor3 catgor4 catgor5 catgor6 catgor7 catgor8
           do
-            source /home/user/lit_search/scripts/config.shlib; # load the config library functions
-            cd /home/user/lit_search/scripts #cd directory to where config files are stored
+            source "$Lit_search_dir"/config.shlib; # load the config library functions
+            cd "$Lit_search_dir" #cd directory to where config files are stored
             catnum="$(config_get catnum)";
             search_cat="$(config_get search_cat)";  
             search="$catgor6";
@@ -573,8 +625,8 @@ do
           read
           while IFS=, read -r catgor1 catgor2 catgor3 catgor4 catgor5 catgor6 catgor7 catgor8
           do
-            source /home/user/lit_search/scripts/config.shlib; # load the config library functions
-            cd /home/user/lit_search/scripts #cd directory to where config files are stored
+            source "$Lit_search_dir"/config.shlib; # load the config library functions
+            cd "$Lit_search_dir" #cd directory to where config files are stored
             catnum="$(config_get catnum)";
             search_cat="$(config_get search_cat)";  
             search="$catgor7";
@@ -599,8 +651,8 @@ do
           read
           while IFS=, read -r catgor1 catgor2 catgor3 catgor4 catgor5 catgor6 catgor7 catgor8
           do
-            source /home/user/lit_search/scripts/config.shlib; # load the config library functions
-            cd /home/user/lit_search/scripts #cd directory to where config files are stored
+            source "$Lit_search_dir"/config.shlib; # load the config library functions
+            cd "$Lit_search_dir" #cd directory to where config files are stored
             catnum="$(config_get catnum)";
             search_cat="$(config_get search_cat)";  
             search="$catgor8";
@@ -637,17 +689,19 @@ IFS=$OLDIFS
 ################################################################################################################
 echo1=$(echo "just wrapping up overall topics summary")
 mes_out
-wkd="$main_dir"/topic_stats;
-file_out="$main_dir"/totals_list.csv;
+wkd="$results_dir"/topic_stats;
+new_dir="$wkd"
+create_dir
+file_out="$results_dir"/totals_list.csv;
 search_term_matrix1 #makes a unique list of all main topics articles to find percentage of articles with each main topic
-file_in="$main_dir"/abstotal.csv;
+file_in="$results_dir"/abstotal.csv;
 sed -i '1i name,freq' "$file_in"
-file_out="$main_dir"/abstotal.tiff;
+file_out="$results_dir"/abstotal.tiff;
 tool=barchart;
 run_tools # will create bar chart for total number of articles with abstracts for each topic
-file_in="$main_dir"/totals.csv;
+file_in="$results_dir"/totals.csv;
 sed -i '1i name,freq' "$file_in"
-file_out="$main_dir"/totals.tiff;
+file_out="$results_dir"/totals.tiff;
 tool=barchart;
 run_tools # will create bar chart for total number of articles for each topic with or wout abstracts
 ################################################################################################################
@@ -658,9 +712,11 @@ do
   search_cat=$(awk -F, 'NR==1{print $'$number'}' "$search_file"); #grep header name from
   if [ "$search_cat" != "" ];
   then
-    file_in="$main_dir"/categories/
-    file_in="$main_dir"/categories/"$search_cat".csv;
-    file_out="$main_dir"/final/"$search_cat".tiff;
+    file_in="$results_dir"/categories/
+    new_dir="$file_in"
+    create_dir
+    file_in="$results_dir"/categories/"$search_cat".csv;
+    file_out="$results_dir"/final/"$search_cat".tiff;
     sed -i '1i name,freq' "$file_in"
     tool=barchart;
     run_tools # will create bar chart for total number of articles with abstracts 
@@ -668,5 +724,3 @@ do
 done
 echo1=$(echo "done with the current topics summary")
 mes_out
-
-

@@ -1,8 +1,3 @@
-BAVG,(BAGV[title/abstract]AND("Bagaza virus "[title/abstract]OR"Bagaza"[title/abstract]))
-CHIKV,(CHIKV[title/abstract]OR("chikangunya virus "[title/abstract]OR"chikangunya "[title/abstract]))
-DENV,(DENV[title/abstract]OR("Dengue Virus "[title/abstract]OR"dengue fever "[title/abstract]))
-HCV,(HCV[title/abstract]AND("hepatitis C virus "[title/abstract]OR"hep C "[title/abstract]))
-JEV,(JEV[title/abstract]AND("Japanese encephalitis virus "[title/abstract]OR"Japanese encephalitis"[title/abstract]))
-WNV,(WNV[title/abstract]OR("West Nile virus "[title/abstract]OR"West Nile"[title/abstract]))
-YFV,(YFV[title/abstract]OR ("yellow fever virus "[title/abstract]OR"yellow fever "[title/abstract]))
-ZIKV,(ZIKV[title/abstract]OR("Zika Virus "[title/abstract]OR"zika virus"[title/abstract]))
+NGS,sequencing
+transcriptome,transcriptomics
+RNA-sequencing,RNA-seq
