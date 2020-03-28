@@ -1,9 +1,9 @@
-sequencing_terms,types_transcriptome
-genome,isoform
-transcriptome,splicing
-editome,editing
-proteome,methylation
-epigenome,regulation
-lipidome,expression
-metabolome,single
+symptoms,animal_vectors
+fever,bat
+headache,cat
+fatigue,dog
+sneezing,cattle
+coughing,primates
+nausea,birds
+vomiting,chickens
 

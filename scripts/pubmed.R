@@ -10,7 +10,9 @@ if (length(args)==0) {
 abs <- paste0(args[1]) #enter directory and name for abstracts to be stored
 info <- paste0(args[2]) #enter directory and name for other pubmed information to be stored
 max_num <- paste0(args[3])
-search_query <- EUtilsSummary(search_topicfinal,retmax=paste0(args[3])) #runs pubmed search
+search_com <- paste0(args[4])
+
+search_query <- EUtilsSummary(search_com,retmax=paste0(args[3]),mindate=paste0(args[5]),maxdate=paste0(args[6])) #runs pubmed search
 summary(search_query)
 print("Now getting these articles metadata and abstracts")
 records <- EUtilsGet(search_query) #creates S4 object for search this is causing an error
