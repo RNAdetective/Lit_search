@@ -7,9 +7,13 @@
 ___
 
 ## Getting Started
-1.) gitclone https://github.com/RNAdetective/Lit_search.git
+1.) Change your working directory to the one where you would like to install lit_search in
 
-2.) Find the /home/user/Lit_search directory
+```
+gitclone https://github.com/RNAdetective/Lit_search.git
+```
+
+2.) Find the ~/Lit_search directory that you just downloaded from git
 
    * Find file topics.csv and fill in column 1=search term (currently one word only), column 2=number of searches to return, column 3=beginning year to search for, column 4=end year to search for
    
@@ -22,7 +26,7 @@ ___
    * Results_directory = the directory where you would like your results to go
    
 ```
-bash ~/lit_search/scripts/litsearch.sh home_directory Results_directory
+bash ~/Lit_search/scripts/litsearch.sh home_directory Results_directory
 ```
 ___
 
